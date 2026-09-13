@@ -1,0 +1,8 @@
+node_modules
+.next
+.git
+audio-data
+*.md
+!spec.md
+.env
+.env.local
