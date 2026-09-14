@@ -296,31 +296,61 @@ input[type="text"], input[type="password"], input[type="search"], select, textar
 }
 .card h2 { margin: 0 0 0.6rem; font-size: 1rem; }
 
-.dropzone {
-  width: 100%;
-  min-height: 300px;
+/*
+ * Adding a file is a single circle in the middle of an empty page. The drop
+ * target is the whole area; only the circle is drawn. While a file is going up
+ * the ring fills with the progress and the plus becomes the percentage.
+ */
+.add-zone {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
-  flex-direction: column;
-  background: transparent;
-  border: 1px dashed var(--border);
-  border-radius: var(--radius);
+  min-height: 320px;
   padding: 2rem;
   margin-bottom: 1rem;
+}
+.add-btn {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
   color: var(--muted);
+  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
 }
-.dropzone:hover:not(:disabled),
-.dropzone.over {
-  background: var(--panel-2);
+.add-btn:hover:not(:disabled),
+.add-zone.over .add-btn {
   border-color: var(--accent);
-  border-style: solid;
   color: var(--text);
+  background: var(--hover);
 }
-.dropzone:disabled { opacity: 1; cursor: progress; }
-.dropzone svg { width: 48px; height: 48px; display: block; }
-.dropzone-progress { width: 100%; max-width: 22rem; display: grid; gap: 0.4rem; justify-items: center; }
+.add-btn svg { width: 30px; height: 30px; display: block; }
+
+.add-btn.busy {
+  opacity: 1;
+  cursor: progress;
+  border-color: transparent;
+  background: conic-gradient(var(--accent) calc(var(--progress) * 1%), var(--border) 0);
+}
+.add-btn.busy::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--bg);
+}
+.add-pct {
+  position: relative;
+  font-size: 0.82rem;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
 .muted { color: var(--muted); }
 .small { font-size: 0.85rem; }
 .row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }

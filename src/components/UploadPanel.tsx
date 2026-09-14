@@ -77,13 +77,8 @@ export default function UploadPanel() {
         hidden
       />
 
-      <button
-        type="button"
-        className={over ? 'dropzone over' : 'dropzone'}
-        onClick={() => inputRef.current?.click()}
-        disabled={busy}
-        aria-label="Add an audio file"
-        title="Add an audio file"
+      <div
+        className={over ? 'add-zone over' : 'add-zone'}
         onDragOver={(e) => {
           e.preventDefault();
           if (!busy) setOver(true);
@@ -96,25 +91,30 @@ export default function UploadPanel() {
           if (dropped && !busy) upload(dropped);
         }}
       >
-        {busy ? (
-          <span className="dropzone-progress">
-            <span className="bar" style={{ display: 'block', width: '100%' }}>
-              <span style={{ width: `${percent}%` }} />
-            </span>
-            <span className="small muted">{percent}%</span>
-          </span>
-        ) : (
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path
-              d="M12 5v14M5 12h14"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        )}
-      </button>
+        <button
+          type="button"
+          className={busy ? 'add-btn busy' : 'add-btn'}
+          onClick={() => inputRef.current?.click()}
+          disabled={busy}
+          aria-label={busy ? `Uploading, ${percent}%` : 'Add an audio file'}
+          title={busy ? `Uploading, ${percent}%` : 'Add an audio file'}
+          style={busy ? ({ '--progress': percent } as React.CSSProperties) : undefined}
+        >
+          {busy ? (
+            <span className="add-pct">{percent}%</span>
+          ) : (
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                d="M12 5v14M5 12h14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          )}
+        </button>
+      </div>
     </>
   );
 }
