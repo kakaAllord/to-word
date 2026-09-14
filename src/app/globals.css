@@ -285,6 +285,10 @@ input[type="text"], input[type="password"], input[type="search"], select, textar
 .spacer { flex: 1; }
 
 .content { padding: 1.25rem; max-width: 1100px; width: 100%; margin: 0 auto; }
+/* Nothing on the page but the add button: it takes the whole canvas and sits
+ * dead centre of it, rather than perching at the top of an empty page. */
+.content.empty { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.content.empty .add-zone { flex: 1; margin-bottom: 0; }
 
 .card {
   background: var(--panel);
@@ -304,7 +308,7 @@ input[type="text"], input[type="password"], input[type="search"], select, textar
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 320px;
+  min-height: 220px;
   padding: 2rem;
   margin-bottom: 1rem;
 }

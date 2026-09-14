@@ -24,7 +24,7 @@ export default async function HomePage() {
 
   return (
     <Shell tasks={tasks} title="Tasks">
-      <div className="content">
+      <div className={tasks.length === 0 ? 'content empty' : 'content'}>
         <SystemBanners
           storageWarning={storageWarning()}
           missingKey={!hasElevenLabsKey()}
