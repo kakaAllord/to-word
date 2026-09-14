@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { TaskSummary } from '@/lib/tasks';
 
 /** Recency buckets, so a long list still reads at a glance. */
@@ -79,6 +79,7 @@ export default function Shell({
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const footRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -93,8 +94,16 @@ export default function Shell({
     function onKey(event: KeyboardEvent) {
       if (event.key === 'Escape') setMenuOpen(false);
     }
+    function onPointerDown(event: PointerEvent) {
+      const foot = footRef.current;
+      if (foot && !foot.contains(event.target as Node)) setMenuOpen(false);
+    }
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.removeEventListener('pointerdown', onPointerDown);
+    };
   }, [menuOpen]);
 
   async function logout() {
@@ -158,26 +167,19 @@ export default function Shell({
           ))}
         </nav>
 
-        <div className="sidebar-foot">
+        <div className="sidebar-foot" ref={footRef}>
           {menuOpen && (
-            <>
-              <button
-                className="menu-scrim"
-                aria-label="Close settings menu"
-                onClick={() => setMenuOpen(false)}
-              />
-              <div className="rail-menu" role="menu">
-                <Link href="/settings/glossary" role="menuitem">
-                  Glossary
-                </Link>
-                <Link href="/settings/password" role="menuitem">
-                  Password
-                </Link>
-                <button role="menuitem" onClick={logout}>
-                  Sign out
-                </button>
-              </div>
-            </>
+            <div className="rail-menu" role="menu">
+              <Link href="/settings/glossary" role="menuitem">
+                Glossary
+              </Link>
+              <Link href="/settings/password" role="menuitem">
+                Password
+              </Link>
+              <button role="menuitem" onClick={logout}>
+                Sign out
+              </button>
+            </div>
           )}
           <button
             className="rail-foot-btn"
