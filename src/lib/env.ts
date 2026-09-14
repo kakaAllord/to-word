@@ -59,28 +59,26 @@ export function sessionSecret(): string {
 
 /* ---------------- password ---------------- */
 
-/**
- * bcrypt hash of the operator's chosen password, committed so a fresh deploy
- * is usable immediately with no variables set.
- *
- * Anyone who can read this repository can attack this hash offline, so keep the
- * repository private — or set APP_PASSWORD (plain) or APP_PASSWORD_HASH in
- * Railway, either of which overrides this completely.
+/*
+ * There is no password in this repository. The operator chooses one the first
+ * time the app is opened and it is stored as a bcrypt hash in the database
+ * (see lib/password.ts). The two variables below are escape hatches: set
+ * either one to override the stored password, which is how you get back in if
+ * it is ever forgotten.
  */
-const BUILT_IN_PASSWORD_HASH =
-  '$2b$12$AjCV/CHmMISqxRn532sRdum8lcYCo6aGpSNxonKarBJvJ/5lnW0ta';
 
-export function appPasswordHash(): string {
-  return process.env.APP_PASSWORD_HASH || BUILT_IN_PASSWORD_HASH;
-}
-
-/** Plain-text override, for changing the password from the Railway dashboard. */
+/** Plain-text override, for resetting from the Railway dashboard. */
 export function appPasswordPlain(): string | null {
   return process.env.APP_PASSWORD || null;
 }
 
-export function usingBuiltInPassword(): boolean {
-  return !process.env.APP_PASSWORD_HASH && !process.env.APP_PASSWORD;
+/** bcrypt-hash override, from `npm run hash-password`. */
+export function appPasswordHashEnv(): string | null {
+  return process.env.APP_PASSWORD_HASH || null;
+}
+
+export function passwordOverrideSet(): boolean {
+  return Boolean(appPasswordPlain() || appPasswordHashEnv());
 }
 
 /* ---------------- provider ---------------- */

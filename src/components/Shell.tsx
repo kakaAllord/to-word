@@ -44,6 +44,10 @@ export default function Shell({
             <Link href="/settings/glossary" className="small">
               Glossary
             </Link>
+            <span className="muted">·</span>
+            <Link href="/settings/password" className="small">
+              Password
+            </Link>
             <span className="spacer" />
             <button className="ghost small" onClick={logout} title="Sign out">
               Sign out

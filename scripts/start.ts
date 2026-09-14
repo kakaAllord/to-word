@@ -15,7 +15,8 @@
  */
 import { spawn, type ChildProcess } from 'node:child_process';
 import { runMigrations } from '@/db/migrate';
-import { storageWarning, hasElevenLabsKey, usingBuiltInPassword } from '@/lib/env';
+import { storageWarning, hasElevenLabsKey, passwordOverrideSet } from '@/lib/env';
+import { isSetupRequired } from '@/lib/password';
 
 const WORKER_RESTART_MIN_MS = 2000;
 const WORKER_RESTART_MAX_MS = 30_000;
@@ -74,10 +75,23 @@ function preflight(): void {
       'WARNING: ELEVENLABS_API_KEY is not set. Uploads will queue but transcription will fail until you add it.',
     );
   }
-  if (usingBuiltInPassword()) {
+  if (passwordOverrideSet()) {
     log(
-      'NOTE: signing in with the password built into this repository. Set APP_PASSWORD in the service variables to change it.',
+      'NOTE: APP_PASSWORD/APP_PASSWORD_HASH is set, so it overrides the password stored in the database.',
     );
+  }
+}
+
+/** Runs after migrations, so the table it reads definitely exists. */
+async function reportPasswordState(): Promise<void> {
+  try {
+    if (await isSetupRequired()) {
+      log(
+        'No password has been set yet. Open the app and choose one — the first visitor sets it, so do it now.',
+      );
+    }
+  } catch {
+    // Not worth failing a boot over a log line.
   }
 }
 
@@ -85,6 +99,7 @@ async function main(): Promise<void> {
   log('starting to-word');
   preflight();
   await migrateWithRetry();
+  await reportPasswordState();
 
   let shuttingDown = false;
   let workerBackoff = WORKER_RESTART_MIN_MS;

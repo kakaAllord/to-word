@@ -5,7 +5,7 @@ import { SESSION_COOKIE, isValidSessionValue } from '@/lib/session';
  * Everything is behind the password except the login page, the login API and
  * the health check (spec 12).
  */
-const PUBLIC_PATHS = ['/login', '/api/login', '/api/health'];
+const PUBLIC_PATHS = ['/login', '/api/login', '/api/setup', '/api/health'];
 
 export async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;

@@ -24,10 +24,8 @@ git push -u origin main
 
 The remote is already configured as `git@github.com:kakaAllord/to-word.git`.
 
-**Keep this repository private.** The sign-in password's hash is committed so
-the app works the moment it deploys; anyone who can read the repo can attack
-that hash offline. (Setting `APP_PASSWORD` in step 3 makes the committed hash
-irrelevant, if you would rather make the repo public.)
+There is no password in the repository. You choose one the first time you open
+the deployed app, and it is stored as a bcrypt hash in the database.
 
 ## 3. Railway (5 minutes)
 
@@ -52,9 +50,11 @@ ELEVENLABS_API_KEY  sk_…
 |---|---|
 | `AUDIO_DIR` | the attached volume is detected and used |
 | `SESSION_SECRET` | derived from `DATABASE_URL`, stable across deploys |
-| `APP_PASSWORD` | the password built into the repo is used |
+| `APP_PASSWORD` | the app asks you to choose a password on first open |
 
-To change the password later, add `APP_PASSWORD=whatever you want` and redeploy.
+To change the password later, use **Password** in the app's sidebar.
+`APP_PASSWORD` is the way back in if you are ever locked out: set it, sign in,
+remove it.
 
 ### Volume — do not skip this
 
@@ -88,7 +88,8 @@ just-restarted worker is reported but will not roll back a working deploy.
 
 ## 4. First run
 
-1. Open the domain. Sign in with your password.
+1. Open the domain. It asks you to choose a password — **do this immediately**,
+   because whoever opens it first is the one who sets it.
 2. Upload a short file first — two or three minutes of audio — and watch the
    task go `transcribing → proofreading`.
 3. Map the speakers (`R`, `I`, `I2`), proofread, export the `.docx`.

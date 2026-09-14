@@ -53,17 +53,16 @@ You can still split it into two services (`npm run start:web` and
 
 ## Signing in
 
-One password, no accounts. The password is built into the repository so a fresh
-deploy works immediately. To change it, set either variable on the service:
+One password, no accounts, and **no password anywhere in this repository**. The
+first time you open a fresh deployment it asks you to choose one; it is hashed
+with bcrypt and stored in the database. Every visit after that just asks for it.
 
-```
-APP_PASSWORD=whatever you want          # simplest
-APP_PASSWORD_HASH=$2b$12$...            # npm run hash-password -- 'password'
-```
+Because the first visitor sets the password, open the app and set it as soon as
+the first deploy goes green.
 
-Keep the GitHub repository **private**: anyone who can read it can attack the
-built-in password hash offline. Setting `APP_PASSWORD` makes the committed hash
-irrelevant.
+Change it later at **Password** in the sidebar. Locked out? Set `APP_PASSWORD`
+in the Railway service variables — it overrides the stored password for as long
+as it is set, so you can get in, remove the variable, and carry on.
 
 ## Running it on your PC
 
@@ -111,7 +110,7 @@ and tells you it recovered it.
 |---|---|---|
 | `DATABASE_URL` | yes | — (Neon **pooled** string) |
 | `ELEVENLABS_API_KEY` | yes | — |
-| `APP_PASSWORD` / `APP_PASSWORD_HASH` | no | built-in password |
+| `APP_PASSWORD` / `APP_PASSWORD_HASH` | no | the password you set on first run |
 | `AUDIO_DIR` | no | the Railway volume, else `/data/audio` |
 | `SESSION_SECRET` | no | derived from `DATABASE_URL` |
 | `MAX_UPLOAD_MB` | no | 200 |
