@@ -4,35 +4,27 @@ import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 
 /**
- * Upload with real progress. The file streams to the server as the raw request
- * body (XHR, not fetch, because fetch gives no upload progress), and the server
- * streams it straight to the volume — a 150 MB .m4a is never held in memory.
+ * Adding a file is one gesture: click the plus (or drop a file on it) and the
+ * upload starts. The task name is taken from the filename and can be renamed
+ * later, so nothing stands between the page and the file.
+ *
+ * The file streams to the server as the raw request body (XHR, not fetch,
+ * because fetch gives no upload progress), and the server streams it straight
+ * to the volume — a 150 MB .m4a is never held in memory.
  */
 export default function UploadPanel() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [file, setFile] = useState<File | null>(null);
-  const [name, setName] = useState('');
   const [progress, setProgress] = useState<number | null>(null);
+  const [over, setOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function pick(selected: File | null) {
-    setFile(selected);
-    setError(null);
-    if (selected && !name.trim()) {
-      setName(selected.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' '));
-    }
-  }
-
-  function upload() {
-    if (!file) return;
+  function upload(file: File) {
     setError(null);
     setProgress(0);
 
-    const query = new URLSearchParams({
-      name: name.trim() || file.name,
-      filename: file.name,
-    });
+    const name = file.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
+    const query = new URLSearchParams({ name: name || file.name, filename: file.name });
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `/api/upload?${query.toString()}`);
     xhr.setRequestHeader('content-type', file.type || 'application/octet-stream');
@@ -52,10 +44,8 @@ export default function UploadPanel() {
       } catch {
         payload = {};
       }
+      if (inputRef.current) inputRef.current.value = '';
       if (xhr.status >= 200 && xhr.status < 300 && payload.id) {
-        setFile(null);
-        setName('');
-        if (inputRef.current) inputRef.current.value = '';
         router.push(`/tasks/${payload.id}`);
         router.refresh();
       } else {
@@ -66,60 +56,65 @@ export default function UploadPanel() {
   }
 
   const busy = progress !== null;
+  const percent = Math.round((progress ?? 0) * 100);
 
   return (
-    <div className="card">
-      <h2>New task</h2>
+    <>
       {error && (
         <div className="banner error" role="alert">
           {error}
         </div>
       )}
-      <div className="row" style={{ alignItems: 'flex-end', gap: '0.75rem' }}>
-        <label style={{ flex: '1 1 240px' }}>
-          <span className="small muted">Task name</span>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="AMCOS Mamba Same"
-            disabled={busy}
-          />
-        </label>
-        <label style={{ flex: '1 1 240px' }}>
-          <span className="small muted">Audio file</span>
-          <input
-            ref={inputRef}
-            type="file"
-            accept="audio/*,.m4a,.mp3,.wav,.ogg,.opus,.aac,.flac"
-            onChange={(e) => pick(e.target.files?.[0] ?? null)}
-            disabled={busy}
-            style={{ padding: '0.35rem' }}
-          />
-        </label>
-        <button className="primary" onClick={upload} disabled={!file || busy}>
-          {busy ? 'Uploading…' : 'Upload and transcribe'}
-        </button>
-      </div>
 
-      {busy && (
-        <div style={{ marginTop: '0.8rem' }}>
-          <span className="bar" style={{ display: 'block' }}>
-            <span style={{ width: `${Math.round((progress ?? 0) * 100)}%` }} />
+      <input
+        ref={inputRef}
+        type="file"
+        accept="audio/*,.m4a,.mp3,.wav,.ogg,.opus,.aac,.flac"
+        onChange={(e) => {
+          const picked = e.target.files?.[0];
+          if (picked) upload(picked);
+        }}
+        hidden
+      />
+
+      <button
+        type="button"
+        className={over ? 'dropzone over' : 'dropzone'}
+        onClick={() => inputRef.current?.click()}
+        disabled={busy}
+        aria-label="Add an audio file"
+        title="Add an audio file"
+        onDragOver={(e) => {
+          e.preventDefault();
+          if (!busy) setOver(true);
+        }}
+        onDragLeave={() => setOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setOver(false);
+          const dropped = e.dataTransfer.files?.[0];
+          if (dropped && !busy) upload(dropped);
+        }}
+      >
+        {busy ? (
+          <span className="dropzone-progress">
+            <span className="bar" style={{ display: 'block', width: '100%' }}>
+              <span style={{ width: `${percent}%` }} />
+            </span>
+            <span className="small muted">{percent}%</span>
           </span>
-          <p className="small muted" style={{ margin: '0.35rem 0 0' }}>
-            {Math.round((progress ?? 0) * 100)}% uploaded. Keep this tab open until it finishes;
-            transcription itself runs on the server and you can close the tab once it starts.
-          </p>
-        </div>
-      )}
-
-      {!busy && (
-        <p className="small muted" style={{ margin: '0.7rem 0 0' }}>
-          The file is compressed to 16 kHz mono Opus on the server, then sent to ElevenLabs
-          Scribe. A 50-minute interview usually takes a few minutes.
-        </p>
-      )}
-    </div>
+        ) : (
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path
+              d="M12 5v14M5 12h14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        )}
+      </button>
+    </>
   );
 }

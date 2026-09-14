@@ -34,13 +34,9 @@ export default async function HomePage() {
 
         <UploadPanel />
 
-        <div className="card">
-          <h2>All tasks</h2>
-          {tasks.length === 0 ? (
-            <p className="muted small">
-              No tasks yet. Upload an audio file above to get started.
-            </p>
-          ) : (
+        {tasks.length > 0 && (
+          <div className="card">
+            <h2>All tasks</h2>
             <div style={{ overflowX: 'auto' }}>
               <table>
                 <thead>
@@ -73,16 +69,18 @@ export default async function HomePage() {
                 </tbody>
               </table>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div className="card">
-          <h2>Invoicing</h2>
-          <p className="small muted" style={{ margin: 0 }}>
-            {paid} file{paid === 1 ? '' : 's'} paid · {unpaid} delivered and awaiting
-            payment{unpaid ? ` · $${unpaid * 10} outstanding at $10 per file` : ''}.
-          </p>
-        </div>
+        {tasks.length > 0 && (
+          <div className="card">
+            <h2>Invoicing</h2>
+            <p className="small muted" style={{ margin: 0 }}>
+              {paid} file{paid === 1 ? '' : 's'} paid · {unpaid} delivered and awaiting
+              payment{unpaid ? ` · $${unpaid * 10} outstanding at $10 per file` : ''}.
+            </p>
+          </div>
+        )}
       </div>
     </Shell>
   );
