@@ -5,9 +5,16 @@
 # together, so a Railway deploy is one service with one volume.
 FROM node:22-bookworm-slim
 
-RUN apt-get update \
- && apt-get install -y --no-install-recommends ffmpeg ca-certificates \
- && rm -rf /var/lib/apt/lists/*
+# Retried: a single transient DNS or mirror hiccup should not fail a deploy.
+RUN set -eux; \
+    for attempt in 1 2 3; do \
+      apt-get update && \
+      apt-get install -y --no-install-recommends ffmpeg ca-certificates && break || \
+      { echo "apt attempt ${attempt} failed; retrying in 10s"; sleep 10; }; \
+      [ "${attempt}" = "3" ] && exit 1; \
+    done; \
+    rm -rf /var/lib/apt/lists/*; \
+    ffmpeg -version | head -1
 
 WORKDIR /app
 

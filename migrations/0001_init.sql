@@ -1,4 +1,6 @@
-create extension if not exists "pgcrypto";
+-- gen_random_uuid() is built into Postgres 13+, so no extension is needed.
+-- (Creating one can fail on a restricted role, which would abort this
+-- migration for no reason.)
 
 create table if not exists task (
   id               uuid primary key default gen_random_uuid(),
